@@ -12,7 +12,7 @@ function Login({handlelogin}) {
         const handlesubmit = async(e)=>{
              e.preventDefault();
           try {
-               const response = await axios.post("http://localhost:3002/api/v1/user/login",
+               const response = await axios.post("https://baat-chit-backend1.onrender.com/api/v1/user/login",
                 {
                   email:email,
                   password:password

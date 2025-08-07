@@ -28,7 +28,7 @@ function Main({loginuser}) {
 
  const handlelogout = async () => {
   try {
-   await axios.post("http://localhost:3002/api/v1/user/logout", {}, {
+   await axios.post("https://baat-chit-backend1.onrender.com/api/v1/user/logout", {}, {
   withCredentials: true
 });
     localStorage.removeItem("loginuser");

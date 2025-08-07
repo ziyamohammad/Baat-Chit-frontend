@@ -189,12 +189,14 @@ form label{
   height:auto;
   width:100%;
   margin-bottom: 20px;
+  position: relative;
 
 }
 .coverimage{
   width:50px;
   overflow: hidden;
   border-radius: 40px;
+  
 }
 .coverimage img{
   aspect-ratio: 1/1;

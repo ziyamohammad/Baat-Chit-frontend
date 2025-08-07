@@ -26,7 +26,7 @@ function Signup() {
     }
 
       try {
-        const response = await axios.post(`https://baat-chit-backend1.onrender.com/api/v1/user/register`,formData,{withCredentials:true})
+        const response = await axios.post(`https://baat-chit-backend1.onrender.com/register`,formData,{withCredentials:true})
         console.log(response)
         toast.success("User Registered Successfully")
         navigate("/")

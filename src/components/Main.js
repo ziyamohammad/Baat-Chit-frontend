@@ -3,6 +3,7 @@ import { CircleUser, LogOut, MessageCircleMore, UserPlus } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import {useNavigate } from 'react-router'
 import {toast} from "react-toastify"
+import io from "socket.io-client"
 
 
 
@@ -10,12 +11,13 @@ function Main({loginuser}) {
   const[menu,setmenu]=useState("messages");
   const[users,setusers]=useState([]);
   const navigate = useNavigate();
+  const[online,setonline]=useState([])
 
 
   useEffect(()=>{
     const handleusers = async()=>{
      try {
-       const response = await axios.post("https://baat-chit-backend1.onrender.com/api/v1/user/fetchuser",{withCredentials:true})
+       const response = await axios.post("https://baat-chit-backend1.onrender.com/fetchuser",{withCredentials:true})
        console.log(response.data.data)
        const allusers=response.data.data
        setusers(allusers)
@@ -41,6 +43,28 @@ function Main({loginuser}) {
   }
 };
 
+//socket
+useEffect(()=>{
+  const socketConnection = io("https://baat-chit-backend1.onrender.com",
+    {
+      auth:{
+        id : loginuser._id,
+      }
+    }
+  )
+  
+  // socketConnection.on("message-user",(data)=>{
+  //   console.log("message from",data)
+  // })
+  socketConnection.on("onlineuser",(onlineuser)=>{
+     setonline(onlineuser)
+  })
+
+  return ()=>(
+    socketConnection.disconnect()
+  )
+},[loginuser._id])
+
   return (
     <div className = "main">
       <div className="sidebar">
@@ -62,10 +86,25 @@ function Main({loginuser}) {
           <>
            <h2 className="messagehead">All Users</h2>
             {users.map((items)=>{
+              const isOnline = online.includes(items._id);
             return (
               <div className="allusers">
                 <div className="coverimage">
                   <img src ={items.image} alt="/" height="100%" width="100%"/>
+                   {isOnline && (
+          <span
+            style={{
+              position: "absolute",
+              bottom: "11px",
+              left: "10px",
+              width: "14px",
+              height: "14px",
+              backgroundColor: "green",
+              borderRadius: "50%",
+              border: "2px solid white"
+            }}
+          />
+        )}
                 </div>
                 <div className="messagename">
                    <span className = "username">{items.fullname}</span>
@@ -79,6 +118,7 @@ function Main({loginuser}) {
         )}
         {menu==="profile" && (
           <div className="userprofile">
+             <h2 className="messagehead">Profile</h2>
             <div className="userimage">
               <img src={loginuser.image} alt="/" height="100%" width="100%" />
             </div>

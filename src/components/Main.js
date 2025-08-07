@@ -17,7 +17,7 @@ function Main({loginuser}) {
   useEffect(()=>{
     const handleusers = async()=>{
      try {
-       const response = await axios.post("https://baat-chit-backend1.onrender.com/fetchuser",{withCredentials:true})
+       const response = await axios.post("https://baat-chit-backend1.onrender.com/api/v1/user/fetchuser",{withCredentials:true})
        console.log(response.data.data)
        const allusers=response.data.data
        setusers(allusers)

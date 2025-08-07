@@ -1,38 +1,255 @@
-.App {
-  text-align: center;
-}
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+*{
+  padding:0;
+  margin:0;
+  box-sizing:border-box;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
+.App{
+  width:100vw;
+ height: 100vh;
+ overflow: auto;
+  display:flex;
   flex-direction: column;
+ 
+}
+.navbar{
+  height:auto;
+  width:100%;
+  padding:10px 0px 10px 0px;
+  display:flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap:20px;
+   font-family: "Fredoka", sans-serif;
+   color:black;
+   font-size: 40px;
+   font-weight: 600;
+   background-color: #F4A261;
+}
+.logo{
+  width:40px;
 }
 
-.App-link {
-  color: #61dafb;
+/* signup page */
+.signup{
+  background-color: #FFF8F0;
+  padding: 70px 20px 70px 20px;
+  width:100%;
+  height:auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.signupform{
+  height:auto;
+  width:500px;
+  padding:20px;
+  display:flex;
+  
+  flex-direction: column;
+  background-color: #2A9D8F;
+  border-radius: 12px;
+}
+.signuphead{
+   font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-size: 30px;
+   font-weight: 600;
+   text-align:center ;
+
+}
+form{
+  width:100%;
+  height:auto;
+  gap:20px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+.name ,.email ,.phonenumber ,.password ,.image{
+  display:flex;
+  flex-direction: column;
+  width:100%;
+  gap:10px;
+}
+.nameinput ,.emailinput ,.passwordinput ,.numberinput{
+  width:100%;
+  height:auto;
+   font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-size: 24px;
+  border-radius: 8px;
+   padding:5px 5px 5px 5px;
+}
+form label{
+   font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-size: 20px;
+   font-weight: 500;
+}
+.imageinput{
+   width:100%;
+  height:auto;
+   font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-size: 18px;
+   font-weight: 500;
+  border-radius: 8px;
+   padding:5px 5px 5px 5px;
+}
+.formsubmit{
+  width:100%;
+   height:auto;
+   font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 500;
+   font-size: 24px;
+  border-radius: 8px;
+  padding:6px 0px 6px 0px;
+  background-color: #E76F51;
+}
+.login{
+   background-color: #FFF8F0;
+  
+  width:100%;
+  height: 110vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.newuser{
+   font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 500;
+   font-size: 16px;
+   padding-left:5px;
+}
+
+/* main page */
+
+.main{
+  width:100%;
+  height:90vh;
+  display:flex;
+
+}
+.sidebar{
+  width:7%;
+  height:100%;
+  display:flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background-color:#F8F8F7;
+  padding:20px 10px 20px 10px;
+}
+.upper , .lower{
+  height:auto;
+  width:100%;
+  display:flex;
+  flex-direction: column;
+  gap:20px;
+  align-items: center;
+  justify-content: center;
+}
+.messagebar{
+  width:40%;
+  height:100%;
+  display:flex;
+  flex-direction: column;
+  background-color:white;
+}
+.message{
+  width:95%;
+  height:100%;
+  display:flex;
+  flex-direction: column;
+  background-image:url(../public/wallapaper.jpeg) ;
+  background-size:95% auto;
+}
+.messagehead{
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 600;
+   font-size: 30px;
+   padding:10px 0px 10px 10px;
+   margin-bottom:10px;
+   border-bottom:1px solid #2D2D2D;
+}
+.allusers{
+  display:flex;
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 500;
+   font-size: 20px;
+  gap:10px;
+  padding:10px;
+  height:auto;
+  width:100%;
+  margin-bottom: 20px;
+
+}
+.coverimage{
+  width:50px;
+  overflow: hidden;
+  border-radius: 40px;
+}
+.coverimage img{
+  aspect-ratio: 1/1;
+}
+.messagename{
+  display:flex;
+  flex-direction: column;
+  gap:5px;
+}
+.recentchats{
+     font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 400;
+   font-size: 16px;
+}
+.userprofile{
+  width:100%;
+  height:auto;
+  display:flex;
+  flex-direction: column;
+  align-items: left;
+  padding:10px 10px 0px 10px;
+  gap:30px;
+}
+.userimage{
+   width:30%;
+  overflow: hidden;
+  border-radius: 80px;
+}
+.userimage img{
+  aspect-ratio: 1/1;
+}
+.parentphone , .parentemail{
+  display: flex;
+  flex-direction: column;
+  width:100%;
+
+  align-items: left;
+
+}
+.useremailhead{
+     font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 400;
+   font-size: 14px;
+}
+.useremail ,.userphone{
+     font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 500;
+   font-size: 18px;
+}
+.username{
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 500;
+   font-size: 24px;
 }

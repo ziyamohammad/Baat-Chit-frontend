@@ -101,7 +101,7 @@ useEffect(() => {
        })
     }
 
-  }, [recieverid]);
+  });
 
 //sender sending message is handled here
 
@@ -129,7 +129,7 @@ useEffect(() => {
       }
     });
   }
-}, []);
+});
 
   return (
     <div className = "main">

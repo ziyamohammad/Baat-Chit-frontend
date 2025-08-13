@@ -160,6 +160,7 @@ form label{
   display:flex;
   flex-direction: column;
   background-color:white;
+  border-right: 1px solid black;
 }
 .message{
   width:95%;
@@ -174,7 +175,7 @@ form label{
    color:#2D2D2D;
    font-weight: 600;
    font-size: 30px;
-   padding:10px 0px 10px 10px;
+   padding:18px 0px 19.5px 10px;
    margin-bottom:10px;
    border-bottom:1px solid #2D2D2D;
 }
@@ -254,4 +255,91 @@ form label{
    color:#2D2D2D;
    font-weight: 500;
    font-size: 24px;
+}
+.messagehead1{
+  display:flex;
+  padding:10px 0px 10px 10px;
+  background-color: white;
+  align-items: center;
+  gap:10px;
+  border-bottom:1px solid black;
+}
+.message{
+  display:flex;
+  flex-direction: column;
+  justify-content: space-between;
+ 
+}
+.messages{
+  display:flex;
+  align-items:center;
+  width:100%;
+  height:auto;
+   background-color: white;
+   border-top: 1px solid black;
+   padding:0px 10px 0px 10px;
+}
+.chat{
+  width:95%;
+  height:auto;
+  padding:10px;
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 400;
+   font-size: 20px;
+   border:none;
+
+}
+.chatsdiv{
+  height:100%;
+  overflow: auto;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  padding:10px 10px 10px 10px;
+  
+}
+.sendersidechats{
+  background-color: rgb(185, 240, 185);
+  text-align: right;
+  padding:10px;
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 400;
+   font-size: 18px;
+   align-self:flex-end;
+   max-width:50%;
+   
+   border:1px solid rgba(0,0,0,0.1);
+   border-radius:8px;
+   
+}
+.sendersidechats1{
+  background-color: rgb(185, 240, 185);
+  text-align: right;
+  padding:10px;
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   max-width:50%;
+   font-weight: 400;
+   font-size: 18px;
+   align-self:flex-end;
+  
+   border:1px solid rgba(0,0,0,0.1);
+   border-radius:8px;
+   
+}
+.recieversidechats{
+  background-color: white;
+  align-self:flex-start;
+  padding: 10px;
+    font-family: "Fredoka", sans-serif;
+   color:#2D2D2D;
+   font-weight: 400;
+   max-width:50%;
+   font-size: 18px;
+   
+    border:1px solid rgba(0,0,0,0.1);
+    border-radius:8px;
 }

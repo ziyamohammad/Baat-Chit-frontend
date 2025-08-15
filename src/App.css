@@ -348,7 +348,10 @@ form label{
 }
 
 @media screen and (max-width:670px) {
-  .message ,.messagebar{
+  .messagebar{
     width:93%;
+  }
+  .message {
+    width:100%;
   }
 }

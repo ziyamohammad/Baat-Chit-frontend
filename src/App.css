@@ -346,3 +346,9 @@ form label{
 .nomessagebar , .nomessage{
   display:none;
 }
+
+@media screen and (max-width:670px) {
+  .message ,.messagebar{
+    width:93%;
+  }
+}

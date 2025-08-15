@@ -343,7 +343,7 @@ form label{
     border:1px solid rgba(0,0,0,0.1);
     border-radius:8px;
 }
-.nomessagebar , .nomessage{
+.nomessagebar , .nomessage,.nosidebar{
   display:none;
 }
 

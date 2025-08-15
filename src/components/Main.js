@@ -131,7 +131,7 @@ function Main({ loginuser }) {
   return (
     <div className="main">
       
-      <div className="sidebar">
+      <div className={(width<=670) && receiver?"nosidebar":"sidebar"}>
         <div className="upper">
           <MessageCircleMore fill="#ACABAB" size="30px" onClick={() => setMenu("messages")} />
           <UserPlus fill="#ACABAB" size="30px" onClick={() => setMenu("allusers")} />

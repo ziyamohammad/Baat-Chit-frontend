@@ -343,6 +343,6 @@ form label{
     border:1px solid rgba(0,0,0,0.1);
     border-radius:8px;
 }
-.nouserprofile , .nomessage{
+.nomessagebar , .nomessage{
   display:none;
 }

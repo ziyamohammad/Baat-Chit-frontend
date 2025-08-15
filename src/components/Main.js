@@ -143,7 +143,7 @@ function Main({ loginuser }) {
       </div>
 
       
-      <div className="messagebar">
+      <div className={(window<=670) && receiver?"nomessagebar":"messagebar"}>
         {menu === "messages" && <h2 className="messagehead">Messages</h2>}
 
         {menu === "allusers" && (
@@ -181,7 +181,7 @@ function Main({ loginuser }) {
         )}
 
         {menu === "profile" && (
-          <div className={window<=670 && receiver?"nouserprofile":"userprofile"}>
+          <div className="userprofile">
             <h2 className="messagehead">Profile</h2>
             <div className="userimage">
               <img src={loginuser.image} alt="/" height="100%" width="100%" />
@@ -200,7 +200,7 @@ function Main({ loginuser }) {
       </div>
 
      
-      <div className={window<=670 && !receiver ?"nomessage":"message"}>
+      <div className={(window<=670) && (!receiver) ?"nomessage":"message"}>
         {receiver ? (
           <>
             <div className="messagehead1">

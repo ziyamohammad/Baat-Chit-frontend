@@ -32,7 +32,7 @@ function Signup() {
         navigate("/")
       } catch (error) {
         console.log("error in registering")
-        toast.error("User already exists")
+        toast.error("something went wrong")
       }
     }
   return (

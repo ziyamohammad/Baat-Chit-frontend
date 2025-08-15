@@ -157,6 +157,7 @@ form label{
 .messagebar{
   width:40%;
   height:100%;
+  overflow: auto;
   display:flex;
   flex-direction: column;
   background-color:white;

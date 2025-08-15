@@ -11,6 +11,8 @@ const SOCKET_URL = "https://baat-chit-backend1.onrender.com";
 function Main({ loginuser }) {
   const navigate = useNavigate();
   const width = useWindowWidth();
+  const [unreadCounts, setUnreadCounts] = useState({});
+
   const [menu, setMenu] = useState("messages");
   const [users, setUsers] = useState([]);
   const [online, setOnline] = useState([]);
@@ -44,6 +46,13 @@ function Main({ loginuser }) {
     });
 
     socketRef.current = socket;
+    socket.off("unread-counts").on("unread-counts", (data) => {
+  const countsObj = {};
+  data.forEach(u => {
+    countsObj[u._id] = u.count;
+  });
+  setUnreadCounts(countsObj);
+});
 
    
     socket.off("message-user").on("message-user", (data) => {
@@ -80,8 +89,11 @@ function Main({ loginuser }) {
     };
   }, [loginuser?._id]);
 
+  
+
 
   const handleReceiverSelect = (id) => {
+    setUnreadCounts(prev => ({ ...prev, [id]: 0 }));
     setReceiverId(id);
     activeReceiverRef.current = id;
     const found = users.find((u) => u._id === id) || null;
@@ -99,6 +111,7 @@ function Main({ loginuser }) {
   useEffect(() => {
     activeReceiverRef.current = receiverId || null;
   }, [receiverId]);
+
 
   // ---------- Send message ----------
   const handleSendMessage = () => {
@@ -172,6 +185,18 @@ function Main({ loginuser }) {
                   </div>
                   <div className="messagename">
                     <span className="username">{u.fullname}</span>
+                     {unreadCounts[u._id] > 0 && (
+    <span style={{
+      background: "red",
+      color: "white",
+      borderRadius: "50%",
+      padding: "2px 6px",
+      fontSize: "12px",
+      marginLeft: "6px"
+    }}>
+      {unreadCounts[u._id]}
+    </span>
+  )}
                     <span className="recentchats">hello how are you</span>
                   </div>
                 </div>

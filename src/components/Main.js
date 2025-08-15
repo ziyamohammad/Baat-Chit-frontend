@@ -4,34 +4,30 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import io from "socket.io-client";
+import useWindowWidth from "./useWindowWidth";
 
 const SOCKET_URL = "https://baat-chit-backend1.onrender.com";
-const API_URL = "https://baat-chit-backend1.onrender.com";
 
 function Main({ loginuser }) {
   const navigate = useNavigate();
-
-  // UI state
+  const width = useWindowWidth();
   const [menu, setMenu] = useState("messages");
   const [users, setUsers] = useState([]);
   const [online, setOnline] = useState([]);
   const [receiver, setReceiver] = useState(null);
   const [receiverId, setReceiverId] = useState(null);
-
-  // Chat state (single source of truth)
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  // Socket
   const socketRef = useRef(null);
-  // Keep latest receiver id in a ref to avoid stale closures in listeners
+  // jis reciever se baat ho rhi usko activerecieverref mein rakhenge kyuki agar state me rkhenge to hr render pe state update ho jayega
   const activeReceiverRef = useRef(null);
 
-  // ---------- Fetch users once ----------
+  // users fetch krwa rhe 
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.post(`${API_URL}/api/v1/user/fetchuser`, { withCredentials: true });
+        const res = await axios.post(`https://baat-chit-backend1.onrender.com/api/v1/user/fetchuser`, { withCredentials: true });
         setUsers(res.data?.data || []);
       } catch (e) {
         console.error("fetch users error:", e);
@@ -39,34 +35,32 @@ function Main({ loginuser }) {
     })();
   }, []);
 
-  // ---------- Init socket only once ----------
   useEffect(() => {
     if (!loginuser?._id) return;
 
     const socket = io(SOCKET_URL, {
       auth: { id: loginuser._id },
-      transports: ["websocket"], // helps reduce duplicate connects from polling upgrades
+      transports: ["websocket"], 
     });
 
     socketRef.current = socket;
 
-    // Ensure clean listeners: off -> on
+   
     socket.off("message-user").on("message-user", (data) => {
-      // console.log("you are:", data);
     });
 
     socket.off("onlineuser").on("onlineuser", (onlineUsers) => {
       setOnline(onlineUsers || []);
     });
 
-    // This will be emitted by server when you request history (selectReceiver)
+    //reciever pe click krke message history aati hai jo woh state me save kr rhe taaki visible ho
     socket.off("messagehistory").on("messagehistory", (data) => {
       setMessages(Array.isArray(data) ? data : []);
     });
 
-    // New incoming message (to sender & receiver)
+    // sbse naya message jo user kr rha hai reciever se
     socket.off("new-message").on("new-message", (msg) => {
-      // Show in chat window only if it's for the currently open conversation
+      // agar active hai chat mtlb un do logo me hi chl rhi hai toh jo msg enter kr rhe usko bhi add krlo messages array me
       const me = loginuser._id;
       const active = activeReceiverRef.current;
 
@@ -76,27 +70,25 @@ function Main({ loginuser }) {
       if (isForActiveChat) {
         setMessages((prev) => [...prev, msg]);
       }
-      // else: you could update a conversation list badge here
+      
     });
 
     return () => {
-      // clean up on unmount
+      
       socket.removeAllListeners();
       socket.disconnect();
     };
   }, [loginuser?._id]);
 
-  // ---------- When user opens a chat ----------
+
   const handleReceiverSelect = (id) => {
     setReceiverId(id);
     activeReceiverRef.current = id;
     const found = users.find((u) => u._id === id) || null;
     setReceiver(found);
-
-    // Reset current chat messages (optional UX)
     setMessages([]);
 
-    // Ask server for this conversation history
+    // reciever aur user ki conversation nikaalne ke liye
     if (socketRef.current) {
       socketRef.current.emit("reciever-id", id);
       socketRef.current.emit("selectReceiver", { id: loginuser._id, receiverId: id });
@@ -126,7 +118,7 @@ function Main({ loginuser }) {
   // ---------- Logout ----------
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_URL}/api/v1/user/logout`, { withCredentials: true });
+      await axios.post(`https://baat-chit-backend1.onrender.com/api/v1/user/logout`, { withCredentials: true });
       localStorage.removeItem("loginuser");
       toast.success("User Logged Out successfully");
       navigate("/");
@@ -138,7 +130,7 @@ function Main({ loginuser }) {
 
   return (
     <div className="main">
-      {/* Sidebar */}
+      
       <div className="sidebar">
         <div className="upper">
           <MessageCircleMore fill="#ACABAB" size="30px" onClick={() => setMenu("messages")} />
@@ -150,7 +142,7 @@ function Main({ loginuser }) {
         </div>
       </div>
 
-      {/* Middle list column */}
+      
       <div className="messagebar">
         {menu === "messages" && <h2 className="messagehead">Messages</h2>}
 
@@ -189,12 +181,12 @@ function Main({ loginuser }) {
         )}
 
         {menu === "profile" && (
-          <div className="userprofile">
+          <div className={window<=670 && receiver?"nouserprofile":"userprofile"}>
             <h2 className="messagehead">Profile</h2>
             <div className="userimage">
               <img src={loginuser.image} alt="/" height="100%" width="100%" />
             </div>
-            <span className="username">{String(loginuser.fullname || "").toUpperCase()}</span>
+            <span className="username">{(loginuser.fullname || "").toUpperCase()}</span>
             <div className="parentemail">
               <span className="useremailhead">E-mail</span>
               <span className="useremail">{loginuser.email}</span>
@@ -207,8 +199,8 @@ function Main({ loginuser }) {
         )}
       </div>
 
-      {/* Chat pane */}
-      <div className="message">
+     
+      <div className={window<=670 && !receiver ?"nomessage":"message"}>
         {receiver ? (
           <>
             <div className="messagehead1">

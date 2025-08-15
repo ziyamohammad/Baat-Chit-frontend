@@ -1,242 +1,258 @@
-import axios from 'axios';
-import { CircleUser, LogOut, MessageCircleMore, Send, UserPlus } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
-import {useNavigate } from 'react-router'
-import {toast} from "react-toastify"
-import io from "socket.io-client"
+import axios from "axios";
+import { CircleUser, LogOut, MessageCircleMore, Send, UserPlus } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
+import io from "socket.io-client";
 
+const SOCKET_URL = "https://baat-chit-backend1.onrender.com";
+const API_URL = "https://baat-chit-backend1.onrender.com";
 
-
-function Main({loginuser}) {
-  const[menu,setmenu]=useState("messages");
-  const[users,setusers]=useState([]);
+function Main({ loginuser }) {
   const navigate = useNavigate();
-  const[online,setonline]=useState([])
-  const[reciever,setreciever]=useState({})
-  const[recieverid,setrecieverid]=useState()
-    const socketRef = useRef(null); 
-    const[messages,setmessages]=useState("Enter your message Here")
-    const[chat,setchat]=useState([])
-    const[messagehistory,setmessagehistory]=useState([])
 
-  useEffect(()=>{
-    const handleusers = async()=>{
-     try {
-       const response = await axios.post("https://baat-chit-backend1.onrender.com/api/v1/user/fetchuser",{withCredentials:true})
-       console.log(response.data.data)
-       const allusers=response.data.data
-       setusers(allusers)
-     } catch (error) {
-       console.log("error");
-     }
-    }
-    handleusers();
-  },[])
+  // UI state
+  const [menu, setMenu] = useState("messages");
+  const [users, setUsers] = useState([]);
+  const [online, setOnline] = useState([]);
+  const [receiver, setReceiver] = useState(null);
+  const [receiverId, setReceiverId] = useState(null);
 
- const handlelogout = async () => {
-  try {
-   await axios.post("https://baat-chit-backend1.onrender.com/api/v1/user/logout", {
-  withCredentials: true
-});
-    localStorage.removeItem("loginuser");
-    toast.success("User Logged Out successfully");
-    navigate("/");
-  } catch (error) {
-    console.error("Logout error:", error);
-    console.error("Logout response error:", error.response?.data);
-    toast.error("Logout failed");
-  }
-};
+  // Chat state (single source of truth)
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
 
- const handlerecieverid = (id) =>{
-  setrecieverid(id)
- const recieverdetail=users.find((u)=>u._id === id)
-  setreciever(recieverdetail)
-   socketRef.current.on("messagehistory",(data)=>{
-    console.log(data)
-   })
-   setchat([])
-}
+  // Socket
+  const socketRef = useRef(null);
+  // Keep latest receiver id in a ref to avoid stale closures in listeners
+  const activeReceiverRef = useRef(null);
 
-//socket
-useEffect(()=>{
-  const socketConnection = io("https://baat-chit-backend1.onrender.com",
-    {
-      auth:{
-        id : loginuser._id,
+  // ---------- Fetch users once ----------
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.post(`${API_URL}/api/v1/user/fetchuser`, { withCredentials: true });
+        setUsers(res.data?.data || []);
+      } catch (e) {
+        console.error("fetch users error:", e);
       }
-    }
-  )
-   socketRef.current = socketConnection;
-  
-   //last messages
-   socketConnection.on("allgroupedconversation",(data)=>{
-    console.log(data)
-   })
+    })();
+  }, []);
 
+  // ---------- Init socket only once ----------
+  useEffect(() => {
+    if (!loginuser?._id) return;
 
-
-
-   //senders info 
-    socketConnection.on("message-user",(data)=>{
-    console.log("message from",data)
-  })
-
-  //online users list
-  socketConnection.on("onlineuser",(onlineuser)=>{
-     setonline(onlineuser)
-  })
-
-  return ()=>socketConnection.disconnect()
-},[loginuser._id])
-
-useEffect(() => {
-    if (recieverid && socketRef.current) {
-      socketRef.current.emit("reciever-id", recieverid);
-       socketRef.current.emit("selectReceiver", { id: loginuser._id, receiverId: recieverid });
-       socketRef.current.on("messagehistory",(data)=>{
-        console.log(data);
-        setmessagehistory(data)
-        
-       })
-    }
-
-  });
-
-//sender sending message is handled here
-
-  const handleSendMessage = () => {
-  if (!messages.trim()) return;
-  socketRef.current.emit("send-message", {
-    text: messages,
-    receiverId: recieverid
-  });
-  setchat([...chat,messages])
-  setmessages(""); 
-};
-
-
-//new message agar sender reciever koi bhi bheje
-useEffect(() => {
-  if (socketRef.current) {
-    socketRef.current.on("new-message", (msg) => {
-      if (
-        (msg.id === loginuser._id && msg.receiverId === recieverid) ||
-        (msg.receiverId === loginuser._id && msg.id === recieverid)
-      ) {
-        
-        console.log(chat)
-      }
+    const socket = io(SOCKET_URL, {
+      auth: { id: loginuser._id },
+      transports: ["websocket"], // helps reduce duplicate connects from polling upgrades
     });
-  }
-});
+
+    socketRef.current = socket;
+
+    // Ensure clean listeners: off -> on
+    socket.off("message-user").on("message-user", (data) => {
+      // console.log("you are:", data);
+    });
+
+    socket.off("onlineuser").on("onlineuser", (onlineUsers) => {
+      setOnline(onlineUsers || []);
+    });
+
+    // This will be emitted by server when you request history (selectReceiver)
+    socket.off("messagehistory").on("messagehistory", (data) => {
+      setMessages(Array.isArray(data) ? data : []);
+    });
+
+    // New incoming message (to sender & receiver)
+    socket.off("new-message").on("new-message", (msg) => {
+      // Show in chat window only if it's for the currently open conversation
+      const me = loginuser._id;
+      const active = activeReceiverRef.current;
+
+      const isForActiveChat =
+        (msg.id === me && msg.receiverId === active) || (msg.receiverId === me && msg.id === active);
+
+      if (isForActiveChat) {
+        setMessages((prev) => [...prev, msg]);
+      }
+      // else: you could update a conversation list badge here
+    });
+
+    return () => {
+      // clean up on unmount
+      socket.removeAllListeners();
+      socket.disconnect();
+    };
+  }, [loginuser?._id]);
+
+  // ---------- When user opens a chat ----------
+  const handleReceiverSelect = (id) => {
+    setReceiverId(id);
+    activeReceiverRef.current = id;
+    const found = users.find((u) => u._id === id) || null;
+    setReceiver(found);
+
+    // Reset current chat messages (optional UX)
+    setMessages([]);
+
+    // Ask server for this conversation history
+    if (socketRef.current) {
+      socketRef.current.emit("reciever-id", id);
+      socketRef.current.emit("selectReceiver", { id: loginuser._id, receiverId: id });
+    }
+  };
+
+  // Keep ref in sync
+  useEffect(() => {
+    activeReceiverRef.current = receiverId || null;
+  }, [receiverId]);
+
+  // ---------- Send message ----------
+  const handleSendMessage = () => {
+    if (!input.trim()) return;
+    if (!receiverId) {
+      toast.info("Select a user to chat with.");
+      return;
+    }
+    // Don't optimistically push; rely on single server event to avoid duplicates
+    socketRef.current?.emit("send-message", {
+      text: input.trim(),
+      receiverId,
+    });
+    setInput("");
+  };
+
+  // ---------- Logout ----------
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_URL}/api/v1/user/logout`, { withCredentials: true });
+      localStorage.removeItem("loginuser");
+      toast.success("User Logged Out successfully");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
+    }
+  };
 
   return (
-    <div className = "main">
+    <div className="main">
+      {/* Sidebar */}
       <div className="sidebar">
-         <div className="upper">
-           <MessageCircleMore fill="#ACABAB" size="30px" onClick={()=>{setmenu("messages")}}/>
-           <UserPlus fill="#ACABAB" size="30px" onClick={()=>{setmenu("allusers")}}/>
-         </div>
-         <div className="lower">
-            <CircleUser fill="#ACABAB" size="30px" onClick={()=>{setmenu("profile")}}/>
-            <LogOut fill="#ACABAB" size="30px" onClick={handlelogout}/>
-         </div>
+        <div className="upper">
+          <MessageCircleMore fill="#ACABAB" size="30px" onClick={() => setMenu("messages")} />
+          <UserPlus fill="#ACABAB" size="30px" onClick={() => setMenu("allusers")} />
+        </div>
+        <div className="lower">
+          <CircleUser fill="#ACABAB" size="30px" onClick={() => setMenu("profile")} />
+          <LogOut fill="#ACABAB" size="30px" onClick={handleLogout} />
+        </div>
       </div>
+
+      {/* Middle list column */}
       <div className="messagebar">
-        {menu==="messages" && (
-          <h2 className="messagehead">Messages</h2>
-         
-        )}
-        {menu==="allusers" && (
+        {menu === "messages" && <h2 className="messagehead">Messages</h2>}
+
+        {menu === "allusers" && (
           <>
-           <h2 className="messagehead">All Users</h2>
-            {users.map((items)=>{
-              const isOnline = online.includes(items._id);
-            return (
-              <div className="allusers" onClick={()=>{handlerecieverid(items._id)}}>
-                <div className="coverimage">
-                  <img src ={items.image} alt="/" height="100%" width="100%"/>
-                   {isOnline && (
-          <span
-            style={{
-              position: "absolute",
-              bottom: "11px",
-              left: "10px",
-              width: "14px",
-              height: "14px",
-              backgroundColor: "green",
-              borderRadius: "50%",
-              border: "2px solid white"
-            }}
-          />
-        )}
+            <h2 className="messagehead">All Users</h2>
+            {users.map((u) => {
+              const isOnline = online.includes(u._id);
+              return (
+                <div key={u._id} className="allusers" onClick={() => handleReceiverSelect(u._id)}>
+                  <div className="coverimage" style={{ position: "relative" }}>
+                    <img src={u.image} alt="/" height="100%" width="100%" />
+                    {isOnline && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "11px",
+                          left: "10px",
+                          width: "14px",
+                          height: "14px",
+                          backgroundColor: "green",
+                          borderRadius: "50%",
+                          border: "2px solid white",
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="messagename">
+                    <span className="username">{u.fullname}</span>
+                    <span className="recentchats">hello how are you</span>
+                  </div>
                 </div>
-                <div className="messagename">
-                   <span className = "username">{items.fullname}</span>
-                   <span className="recentchats">hello how are you</span>
-                </div>
-               
-              </div>
-            )
-          })}
+              );
+            })}
           </>
         )}
-        {menu==="profile" && (
+
+        {menu === "profile" && (
           <div className="userprofile">
-             <h2 className="messagehead">Profile</h2>
+            <h2 className="messagehead">Profile</h2>
             <div className="userimage">
               <img src={loginuser.image} alt="/" height="100%" width="100%" />
             </div>
-            <span className="username">{(loginuser.fullname).toUpperCase()}</span>
+            <span className="username">{String(loginuser.fullname || "").toUpperCase()}</span>
             <div className="parentemail">
-            <span className="useremailhead">E-mail</span>
-            <span className="useremail">{loginuser.email}</span>
+              <span className="useremailhead">E-mail</span>
+              <span className="useremail">{loginuser.email}</span>
             </div>
             <div className="parentphone">
-               <span className="useremailhead">Phone Number</span>
-            <span className="userphone">{loginuser.phone}</span>
+              <span className="useremailhead">Phone Number</span>
+              <span className="userphone">{loginuser.phone}</span>
             </div>
           </div>
         )}
-       
-
       </div>
+
+      {/* Chat pane */}
       <div className="message">
-        {reciever && (
+        {receiver ? (
           <>
-          <div className = "messagehead1">
-             <div className="coverimage">
-                  <img src ={reciever.image} alt="/" height="100%" width="100%"/>
+            <div className="messagehead1">
+              <div className="coverimage">
+                <img src={receiver.image} alt="/" height="100%" width="100%" />
               </div>
-                <div className="messagename">
-                   <span className = "username">{reciever.fullname?.toUpperCase()}</span>
-                </div>
-          </div>
-          <div className="chatsdiv">
-             {messagehistory.map((ch)=>{
-              return(
-                <p className={ch.id===loginuser._id?"sendersidechats":"recieversidechats"}>{ch.text}</p>
-              )
-             })}
-               {chat.map((c)=>{
-            return(
-                 <p className = "sendersidechats1">{c}</p>
-            )
-          })}
-          </div>
-         
-         <div className="messages">
-             <input type="text" value={messages} className="chat" onClick={()=>{setmessages("")}} onChange={(e)=>{
-             setmessages(e.target.value)
-             }}/>
-             <Send onClick={handleSendMessage}/>
-          </div>
+              <div className="messagename">
+                <span className="username">{String(receiver.fullname || "").toUpperCase()}</span>
+              </div>
+            </div>
+
+            <div className="chatsdiv">
+              {messages.map((m) => (
+                <p
+                  key={m._id || `${m.id}-${m.createdAt || Math.random()}`}
+                  className={m.id === loginuser._id ? "sendersidechats" : "recieversidechats"}
+                >
+                  {m.text}
+                </p>
+              ))}
+            </div>
+
+            <div className="messages">
+              <input
+                type="text"
+                value={input}
+                placeholder="Enter your message here"
+                className="chat"
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSendMessage();
+                }}
+              />
+              <Send onClick={handleSendMessage} style={{ cursor: "pointer" }} />
+            </div>
           </>
+        ) : (
+          <div className="empty-chat" style={{ padding: 24, color: "#666" }}>
+            Select a user to start chatting.
+          </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Main
+export default Main;

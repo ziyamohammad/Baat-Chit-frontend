@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CircleUser, LogOut, MessageCircleMore, Send, UserPlus } from "lucide-react";
+import { ArrowLeft, CircleUser, LogOut, MessageCircleMore, Send, UserPlus } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -204,6 +204,7 @@ function Main({ loginuser }) {
         {receiver ? (
           <>
             <div className="messagehead1">
+              {width<=670 && (<ArrowLeft onClick={()=>{setReceiver(null)}}/>)}
               <div className="coverimage">
                 <img src={receiver.image} alt="/" height="100%" width="100%" />
               </div>

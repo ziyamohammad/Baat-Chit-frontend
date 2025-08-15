@@ -143,7 +143,7 @@ function Main({ loginuser }) {
       </div>
 
       
-      <div className={(window<=670) && receiver?"nomessagebar":"messagebar"}>
+      <div className={(width<=670) && receiver?"nomessagebar":"messagebar"}>
         {menu === "messages" && <h2 className="messagehead">Messages</h2>}
 
         {menu === "allusers" && (
@@ -200,7 +200,7 @@ function Main({ loginuser }) {
       </div>
 
      
-      <div className={(window<=670) && (!receiver) ?"nomessage":"message"}>
+      <div className={(width<=670) && (!receiver) ?"nomessage":"message"}>
         {receiver ? (
           <>
             <div className="messagehead1">
